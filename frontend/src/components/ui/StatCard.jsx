@@ -1,6 +1,5 @@
-import React from 'react';
-import { Card, CardContent } from './Card';
-import { cn } from '../../utils';
+import { Card, CardContent } from "./Card";
+import { cn } from "../../utils";
 
 export function StatCard({ title, value, icon: Icon, description, className }) {
   return (

@@ -1,24 +1,130 @@
 @import "tailwindcss";
 
 @theme {
-  /* Premium Typography */
-  --font-sans: "Inter", system-ui, sans-serif;
+  /* =========================================================
+     TYPOGRAPHY
+     ========================================================= */
 
-  /* Primary Brand - A professional deep indigo/blue */
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+
+
+  /* =========================================================
+     PRIMARY BRAND
+     Professional blue / indigo palette
+     ========================================================= */
+
   --color-primary-50: #eff6ff;
   --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
   --color-primary-500: #3b82f6;
   --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
   --color-primary-900: #1e3a8a;
 
-  /* Semantic Colors */
-  --color-success: #10b981;  /* Emerald */
-  --color-warning: #f59e0b;  /* Amber */
-  --color-danger: #ef4444;   /* Red */
-  
-  /* Neutral / Surfaces */
+
+  /* =========================================================
+     SEMANTIC COLORS
+     ========================================================= */
+
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+
+
+  /* =========================================================
+     SURFACES / NEUTRALS
+     ========================================================= */
+
   --color-surface-50: #f8fafc;
   --color-surface-100: #f1f5f9;
+  --color-surface-200: #e2e8f0;
+  --color-surface-300: #cbd5e1;
+  --color-surface-400: #94a3b8;
+  --color-surface-500: #64748b;
+  --color-surface-600: #475569;
+  --color-surface-700: #334155;
   --color-surface-800: #1e293b;
   --color-surface-900: #0f172a;
+}
+
+
+/* =========================================================
+   BASE STYLES
+   ========================================================= */
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    background: var(--color-surface-50);
+    color: var(--color-surface-900);
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    background: var(--color-surface-50);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  ::selection {
+    background: var(--color-primary-100);
+    color: var(--color-primary-900);
+  }
+}
+
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-surface-300) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--color-surface-300);
+    border-radius: 999px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--color-surface-400);
+  }
 }
