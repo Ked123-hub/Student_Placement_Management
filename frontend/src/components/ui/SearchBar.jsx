@@ -5,6 +5,7 @@ export function SearchBar({
   value,
   onChange,
   placeholder = "Search...",
+  label = placeholder,
   className,
   onClear,
 }) {
@@ -21,7 +22,8 @@ export function SearchBar({
         value={value}
         onChange={(event) => onChange?.(event.target.value)}
         placeholder={placeholder}
-        className="h-11 w-full rounded-xl border border-surface-300 bg-white pl-10 pr-10 text-sm text-surface-900 outline-none transition placeholder:text-surface-400 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
+        aria-label={label}
+        className="h-11 w-full rounded-lg border border-surface-300 bg-white pl-10 pr-10 text-sm text-surface-900 outline-none transition placeholder:text-surface-400 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
       />
 
       {value && (

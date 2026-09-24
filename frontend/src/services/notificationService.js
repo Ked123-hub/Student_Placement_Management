@@ -1,26 +1,42 @@
 import { api } from "./api";
 import { MOCKS_ENABLED } from "../config/env";
 import { demoNotifications } from "../mocks/studentData";
+import { demoTpoNotifications } from "../mocks/tpoData";
+import { getAccessToken } from "./api";
+import { paginate } from "../mocks/utils";
 
 export const notificationService = {
   list: (params = {}) =>
     MOCKS_ENABLED
-      ? Promise.resolve({
-          items: demoNotifications,
-          pagination: { page: 1, limit: 20, total: demoNotifications.length },
-          unreadCount: demoNotifications.filter((item) => !item.read).length,
-        })
+      ? getMockNotifications(params)
       : api.get(`/notifications${toQueryString(params)}`),
   markRead: (notificationId) =>
     MOCKS_ENABLED
-      ? markDemoNotificationRead(notificationId)
+      ? markMockNotificationRead(notificationId)
       : api.patch(`/notifications/${notificationId}/read`),
 };
 
-function markDemoNotificationRead(notificationId) {
-  const notification = demoNotifications.find(
-    (item) => item.id === notificationId,
+function getMockNotifications(params) {
+  const notifications =
+    getAccessToken() === "demo:TPO" ? demoTpoNotifications : demoNotifications;
+  const type = params.type ?? "";
+  const unreadOnly = params.unread === "true";
+  const items = notifications.filter(
+    (notification) =>
+      (!type || notification.type === type) &&
+      (!unreadOnly || !notification.read),
   );
+
+  return Promise.resolve({
+    ...paginate(items, params),
+    unreadCount: notifications.filter((item) => !item.read).length,
+  });
+}
+
+function markMockNotificationRead(notificationId) {
+  const notifications =
+    getAccessToken() === "demo:TPO" ? demoTpoNotifications : demoNotifications;
+  const notification = notifications.find((item) => item.id === notificationId);
   if (notification) notification.read = true;
   return Promise.resolve(notification);
 }

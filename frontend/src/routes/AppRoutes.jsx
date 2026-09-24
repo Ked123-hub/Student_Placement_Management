@@ -10,6 +10,7 @@ import StudentsPage from "../pages/tpo/StudentsPage";
 import CompaniesPage from "../pages/tpo/CompaniesPage";
 import DrivesPage from "../pages/tpo/DrivesPage";
 import DriveFormPage from "../pages/tpo/DriveFormPage";
+import TpoNotificationsPage from "../pages/tpo/NotificationsPage";
 import StudentDashboardPage from "../pages/student/StudentDashboardPage";
 import StudentDrivesPage from "../pages/student/StudentDrivesPage";
 import DriveDetailsPage from "../pages/student/DriveDetailsPage";
@@ -18,18 +19,10 @@ import NotificationsPage from "../pages/student/NotificationsPage";
 import ProfilePage from "../pages/student/ProfilePage";
 import ResumePage from "../pages/student/ResumePage";
 import PlacementPage from "../pages/student/PlacementPage";
-
-function PlaceholderPage({ title }) {
-  return (
-    <div className="rounded-xl border border-surface-200 bg-white p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-surface-900">{title}</h2>
-
-      <p className="mt-1 text-sm text-surface-500">
-        This page will be implemented next.
-      </p>
-    </div>
-  );
-}
+import RegisterPage from "../pages/auth/RegisterPage";
+import VerifyOtpPage from "../pages/auth/VerifyOtpPage";
+import ChangePasswordPage from "../pages/auth/ChangePasswordPage";
+import StatusPage from "../pages/system/StatusPage";
 
 export default function AppRoutes() {
   const { user: authUser, isLoading } = useAuth();
@@ -39,6 +32,9 @@ export default function AppRoutes() {
       <Routes>
         {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/verify-otp" element={<VerifyOtpPage />} />
+        <Route path="/change-password" element={<ChangePasswordPage />} />
 
         {/* Student routes */}
         <Route
@@ -47,6 +43,7 @@ export default function AppRoutes() {
               allowedRoles={["STUDENT"]}
               authUser={authUser}
               isLoading={isLoading}
+              requirePasswordChange
             />
           }
         >
@@ -80,6 +77,7 @@ export default function AppRoutes() {
               allowedRoles={["TPO"]}
               authUser={authUser}
               isLoading={isLoading}
+              requirePasswordChange
             />
           }
         >
@@ -97,10 +95,7 @@ export default function AppRoutes() {
             <Route path="drives/new" element={<DriveFormPage />} />
             <Route path="drives/:driveId" element={<DriveFormPage />} />
 
-            <Route
-              path="notifications"
-              element={<PlaceholderPage title="Notifications" />}
-            />
+            <Route path="notifications" element={<TpoNotificationsPage />} />
           </Route>
         </Route>
 
@@ -110,8 +105,13 @@ export default function AppRoutes() {
           element={<Navigate to="/student/dashboard" replace />}
         />
 
+        <Route
+          path="/unauthorized"
+          element={<StatusPage type="unauthorized" />}
+        />
+
         {/* Unknown route */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<StatusPage type="notFound" />} />
       </Routes>
     </BrowserRouter>
   );

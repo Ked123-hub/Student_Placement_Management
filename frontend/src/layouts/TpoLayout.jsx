@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
 import Topbar from "../components/layout/Topbar";
+import { notificationService } from "../services/notificationService";
 
 const pageTitles = {
   "/tpo/dashboard": "Dashboard",
@@ -14,7 +15,15 @@ const pageTitles = {
 
 export default function TpoLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const location = useLocation();
+
+  useEffect(() => {
+    notificationService
+      .list()
+      .then((response) => setNotificationCount(response.unreadCount ?? 0))
+      .catch(() => setNotificationCount(0));
+  }, [location.pathname]);
 
   const title =
     pageTitles[location.pathname] ||
@@ -33,7 +42,7 @@ export default function TpoLayout() {
         <Topbar
           title={title}
           onMenuClick={() => setMobileOpen(true)}
-          notificationCount={5}
+          notificationCount={notificationCount}
           userName="TPO Admin"
           userRole="Placement Officer"
         />

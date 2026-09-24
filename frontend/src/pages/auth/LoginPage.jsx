@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { useAuth } from "../../contexts/useAuth";
 import { DEMO_AUTH_ENABLED } from "../../config/env";
+import AuthShell from "../../components/auth/AuthShell";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -35,56 +36,55 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-surface-50 p-4">
-      <section className="w-full max-w-md rounded-2xl border border-surface-200 bg-white p-6 shadow-sm sm:p-8">
-        <div className="mb-6">
-          <p className="text-sm font-semibold text-primary-600">
-            Placement Cell
-          </p>
-          <h1 className="mt-2 text-2xl font-semibold text-surface-900">
-            Sign in
-          </h1>
-          <p className="mt-1 text-sm text-surface-500">
-            Use your college account to continue.
-          </p>
-
-          {DEMO_AUTH_ENABLED && (
-            <div className="mt-4 rounded-lg bg-primary-50 p-3 text-xs text-primary-800">
-              <p className="font-semibold">Temporary demo accounts</p>
-              <p className="mt-1">Student: student@demo.local / demo123</p>
-              <p>TPO: tpo@demo.local / demo123</p>
-            </div>
-          )}
+    <AuthShell
+      eyebrow="Welcome back"
+      title="Sign in"
+      description="Use your college account to continue."
+    >
+      {DEMO_AUTH_ENABLED && (
+        <div className="mt-4 rounded-lg bg-primary-50 p-3 text-xs text-primary-800">
+          <p className="font-semibold">Temporary demo accounts</p>
+          <p className="mt-1">Student: student@demo.local / demo123</p>
+          <p>TPO: tpo@demo.local / demo123</p>
         </div>
+      )}
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <Input
-            label="College email"
-            name="email"
-            type="email"
-            value={form.email}
-            onChange={updateField}
-            autoComplete="email"
-            required
-          />
-          <Input
-            label="Password"
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={updateField}
-            autoComplete="current-password"
-            required
-          />
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        <Input
+          label="College email"
+          name="email"
+          type="email"
+          value={form.email}
+          onChange={updateField}
+          autoComplete="email"
+          required
+        />
+        <Input
+          label="Password"
+          name="password"
+          type="password"
+          value={form.password}
+          onChange={updateField}
+          autoComplete="current-password"
+          required
+        />
 
-          {error && <p className="text-sm text-danger">{error}</p>}
+        {error && <p className="text-sm text-danger">{error}</p>}
 
-          <Button className="w-full" type="submit" isLoading={isSubmitting}>
-            Sign in
-          </Button>
-        </form>
-      </section>
-    </main>
+        <Button className="w-full" type="submit" isLoading={isSubmitting}>
+          Sign in
+        </Button>
+        <p className="text-center text-sm text-surface-500">
+          New student?{" "}
+          <Link
+            to="/register"
+            className="font-medium text-primary-600 hover:underline"
+          >
+            Create an account
+          </Link>
+        </p>
+      </form>
+    </AuthShell>
   );
 }
 

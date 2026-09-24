@@ -1,12 +1,18 @@
-import { forwardRef } from "react";
+import { forwardRef, useId } from "react";
 import { cn } from "../../utils";
 
 export const Input = forwardRef(
   ({ className, label, error, ...props }, ref) => {
+    const generatedId = useId();
+    const inputId = props.id ?? props.name ?? generatedId;
+    const errorId = error && inputId ? `${inputId}-error` : undefined;
     return (
       <div className="w-full">
         {label && (
-          <label className="mb-1.5 block text-sm font-medium text-surface-900">
+          <label
+            htmlFor={inputId}
+            className="mb-1.5 block text-sm font-medium text-surface-900"
+          >
             {label}
           </label>
         )}
@@ -17,9 +23,16 @@ export const Input = forwardRef(
             className,
           )}
           ref={ref}
+          id={inputId}
+          aria-invalid={error ? "true" : undefined}
+          aria-describedby={errorId}
           {...props}
         />
-        {error && <p className="mt-1.5 text-sm text-danger">{error}</p>}
+        {error && (
+          <p id={errorId} role="alert" className="mt-1.5 text-sm text-danger">
+            {error}
+          </p>
+        )}
       </div>
     );
   },

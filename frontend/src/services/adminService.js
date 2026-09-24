@@ -1,12 +1,7 @@
 import { api } from "./api";
 import { MOCKS_ENABLED } from "../config/env";
 import { demoCompanies, demoDashboard, demoStudents } from "../mocks/tpoData";
-
-const mockList = (items) =>
-  Promise.resolve({
-    items,
-    pagination: { page: 1, limit: 20, total: items.length },
-  });
+import { mockError, paginate } from "../mocks/utils";
 
 export const adminService = {
   getDashboard: () =>
@@ -15,11 +10,11 @@ export const adminService = {
       : api.get("/admin/dashboard"),
   listStudents: (params = {}) =>
     MOCKS_ENABLED
-      ? mockList(filterStudents(params))
+      ? Promise.resolve(paginate(filterStudents(params), params))
       : api.get(`/admin/students${toQueryString(params)}`),
   listCompanies: (params = {}) =>
     MOCKS_ENABLED
-      ? mockList(demoCompanies)
+      ? Promise.resolve(paginate(demoCompanies, params))
       : api.get(`/admin/companies${toQueryString(params)}`),
   createCompany: (payload) =>
     MOCKS_ENABLED
@@ -31,7 +26,7 @@ export const adminService = {
       : api.patch(`/admin/companies/${companyId}`, payload),
   listPlacements: (params = {}) =>
     MOCKS_ENABLED
-      ? mockList([])
+      ? Promise.resolve(paginate([], params))
       : api.get(`/admin/placements${toQueryString(params)}`),
 };
 
@@ -53,6 +48,19 @@ function filterStudents(params) {
 }
 
 function createMockCompany(payload) {
+  if (!payload.name?.trim())
+    return mockError("COMPANY_NAME_REQUIRED", "Company name is required.", 422);
+  if (
+    demoCompanies.some(
+      (company) =>
+        company.name.toLowerCase() === payload.name.trim().toLowerCase(),
+    )
+  ) {
+    return mockError(
+      "COMPANY_ALREADY_EXISTS",
+      "A company with this name already exists.",
+    );
+  }
   const company = { id: `company-${Date.now()}`, ...payload, drives: 0 };
   demoCompanies.push(company);
   return Promise.resolve(company);

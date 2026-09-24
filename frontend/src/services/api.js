@@ -48,20 +48,29 @@ export async function apiRequest(path, options = {}) {
   const token = getAccessToken();
   const isFormData = body instanceof FormData;
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...requestOptions,
-    headers: {
-      ...(isFormData ? {} : { "Content-Type": "application/json" }),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...headers,
-    },
-    body:
-      isFormData || typeof body === "string"
-        ? body
-        : body === undefined
-          ? undefined
-          : JSON.stringify(body),
-  });
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      ...requestOptions,
+      headers: {
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...headers,
+      },
+      body:
+        isFormData || typeof body === "string"
+          ? body
+          : body === undefined
+            ? undefined
+            : JSON.stringify(body),
+    });
+  } catch {
+    const error = new Error(
+      "We could not connect to the service. Check your connection and try again.",
+    );
+    error.code = "NETWORK_ERROR";
+    throw error;
+  }
 
   return parseResponse(response);
 }

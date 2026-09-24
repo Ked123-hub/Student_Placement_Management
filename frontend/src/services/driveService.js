@@ -1,14 +1,20 @@
 import { api } from "./api";
 import { MOCKS_ENABLED } from "../config/env";
-import { demoDrives } from "../mocks/tpoData";
+import {
+  demoDrives,
+  demoRecruitmentRounds,
+  demoRoundParticipants,
+  demoShortlistCandidates,
+} from "../mocks/tpoData";
 import { getStudentDrives } from "../mocks/studentData";
+import { mockError, paginate } from "../mocks/utils";
 
 export const driveService = {
   getCurrent: (params = {}) =>
     MOCKS_ENABLED
       ? Promise.resolve({
           items: getStudentDrives(),
-          pagination: { page: 1, limit: 20, total: getStudentDrives().length },
+          ...paginate(getStudentDrives(), params),
         })
       : api.get(`/drives/current${toQueryString(params)}`),
   getById: (driveId) =>
@@ -20,14 +26,13 @@ export const driveService = {
       : api.get(`/drives/${driveId}`),
   getRounds: (driveId) =>
     MOCKS_ENABLED
-      ? Promise.resolve({ items: [] })
+      ? Promise.resolve({ items: demoRecruitmentRounds })
       : api.get(`/drives/${driveId}/rounds`),
   admin: {
     list: (params = {}) =>
       MOCKS_ENABLED
         ? Promise.resolve({
-            items: demoDrives,
-            pagination: { page: 1, limit: 20, total: demoDrives.length },
+            ...paginate(demoDrives, params),
           })
         : api.get(`/admin/drives${toQueryString(params)}`),
     getById: (driveId) =>
@@ -44,7 +49,7 @@ export const driveService = {
         : api.patch(`/admin/drives/${driveId}`, payload),
     publish: (driveId) =>
       MOCKS_ENABLED
-        ? updateMockDrive(driveId, { status: "OPEN" })
+        ? publishMockDrive(driveId)
         : api.post(`/admin/drives/${driveId}/publish`),
     close: (driveId) =>
       MOCKS_ENABLED
@@ -79,6 +84,7 @@ export const driveService = {
             invalid: 0,
             status: "DRAFT",
             criteria: payload.criteria,
+            candidates: demoShortlistCandidates,
           })
         : api.post(`/admin/drives/${driveId}/shortlists/calculate`, payload),
     uploadCompanyShortlist: (driveId, file) => {
@@ -97,6 +103,14 @@ export const driveService = {
       MOCKS_ENABLED
         ? Promise.resolve({ id: shortlistId, status: "PUBLISHED" })
         : api.post(`/admin/shortlists/${shortlistId}/publish`),
+    getShortlistCandidates: (driveId) =>
+      MOCKS_ENABLED
+        ? Promise.resolve({
+            items: demoShortlistCandidates,
+            shortlistId: `shortlist-${driveId}`,
+            status: "DRAFT",
+          })
+        : api.get(`/admin/drives/${driveId}/shortlists/current`),
     createRound: (driveId, payload) =>
       MOCKS_ENABLED
         ? Promise.resolve({
@@ -105,6 +119,10 @@ export const driveService = {
             status: "UPCOMING",
           })
         : api.post(`/admin/drives/${driveId}/rounds`, payload),
+    getRoundParticipants: (roundId) =>
+      MOCKS_ENABLED
+        ? Promise.resolve({ items: demoRoundParticipants })
+        : api.get(`/admin/rounds/${roundId}/participants`),
     getAttendance: (roundId) =>
       MOCKS_ENABLED
         ? Promise.resolve({ items: [] })
@@ -134,6 +152,18 @@ function toQueryString(params) {
 }
 
 function createMockDrive(payload) {
+  if (
+    !payload.companyId ||
+    !payload.jobRole ||
+    !payload.package ||
+    !payload.applicationDeadline
+  ) {
+    return mockError(
+      "DRIVE_REQUIRED_FIELDS",
+      "Company, role, package, and deadline are required.",
+      422,
+    );
+  }
   const drive = {
     id: `drive-${Date.now()}`,
     ...payload,
@@ -142,6 +172,19 @@ function createMockDrive(payload) {
   };
   demoDrives.push(drive);
   return Promise.resolve(drive);
+}
+
+function publishMockDrive(driveId) {
+  const drive = demoDrives.find((item) => item.id === driveId);
+  if (!drive)
+    return mockError("DRIVE_NOT_FOUND", "The drive could not be found.", 404);
+  if (drive.eligibilityStatus !== "FINALIZED") {
+    return mockError(
+      "ELIGIBILITY_NOT_FINALIZED",
+      "Finalize eligibility before publishing this drive.",
+    );
+  }
+  return updateMockDrive(driveId, { status: "OPEN" });
 }
 
 function updateMockDrive(driveId, payload) {

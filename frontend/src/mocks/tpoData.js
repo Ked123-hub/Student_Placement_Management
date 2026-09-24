@@ -164,3 +164,133 @@ export const demoDashboard = {
     { companyName: "Aster Digital", selected: 32 },
   ],
 };
+
+export const demoTpoNotifications = [
+  {
+    id: "tpo-notification-1",
+    title: "Eligibility snapshot ready",
+    message:
+      "Northstar Systems eligibility calculation is ready to review before publishing.",
+    type: "DRIVE",
+    read: false,
+    createdAt: "2026-09-22T11:15:00Z",
+  },
+  {
+    id: "tpo-notification-2",
+    title: "Shortlist validation completed",
+    message:
+      "The uploaded Vertex Labs shortlist contains 92 valid candidates and 8 issues.",
+    type: "SHORTLIST",
+    read: false,
+    createdAt: "2026-09-21T16:40:00Z",
+  },
+  {
+    id: "tpo-notification-3",
+    title: "Academic update window closed",
+    message:
+      "The latest CGPA update window has closed and records are ready for placement evaluation.",
+    type: "ACADEMIC_UPDATE",
+    read: true,
+    createdAt: "2026-09-20T09:00:00Z",
+  },
+  {
+    id: "tpo-notification-4",
+    title: "Round results pending",
+    message:
+      "Technical interview results for the Northstar Systems drive are waiting to be recorded.",
+    type: "ROUND",
+    read: true,
+    createdAt: "2026-09-18T13:20:00Z",
+  },
+];
+
+export const demoShortlistCandidates = [
+  {
+    applicationId: "application-1",
+    name: "Aarav Mehta",
+    prn: "202300121",
+    branch: "Computer Engineering",
+    cgpa: 8.7,
+    status: "SHORTLISTED",
+    source: "CALCULATED",
+  },
+  {
+    applicationId: "application-2",
+    name: "Isha Kulkarni",
+    prn: "202300134",
+    branch: "Information Technology",
+    cgpa: 9.1,
+    status: "SHORTLISTED",
+    source: "CALCULATED",
+  },
+  {
+    applicationId: "application-3",
+    name: "Mira Shah",
+    prn: "202300152",
+    branch: "Computer Engineering",
+    cgpa: 8.3,
+    status: "SHORTLISTED",
+    source: "MANUAL_OVERRIDE",
+  },
+  {
+    applicationId: "application-4",
+    name: "Kabir Joshi",
+    prn: "202300167",
+    branch: "Electronics Engineering",
+    cgpa: 8.0,
+    status: "PENDING",
+    source: "CALCULATED",
+  },
+];
+
+export const demoRecruitmentRounds = [
+  {
+    id: "round-1",
+    name: "Online Assessment",
+    type: "ASSESSMENT",
+    sequence: 1,
+    status: "COMPLETED",
+  },
+  {
+    id: "round-2",
+    name: "Technical Interview",
+    type: "INTERVIEW",
+    sequence: 2,
+    status: "ONGOING",
+  },
+];
+
+export const demoRoundParticipants = [
+  {
+    applicationId: "application-1",
+    name: "Aarav Mehta",
+    prn: "202300121",
+    attendance: "PRESENT",
+    result: "PASSED",
+    finalResult: null,
+  },
+  {
+    applicationId: "application-2",
+    name: "Isha Kulkarni",
+    prn: "202300134",
+    attendance: "PRESENT",
+    result: "PASSED",
+    finalResult: null,
+  },
+  {
+    applicationId: "application-3",
+    name: "Mira Shah",
+    prn: "202300152",
+    attendance: "ABSENT",
+    result: "FAILED",
+    finalResult: null,
+  },
+  {
+    applicationId: "application-4",
+    name: "Kabir Joshi",
+    prn: "202300167",
+    attendance: "PENDING",
+    result: "PENDING",
+    finalResult: null,
+  },
+];

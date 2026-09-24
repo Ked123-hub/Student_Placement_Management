@@ -2,7 +2,7 @@ import { cn } from "../../utils";
 
 export function Table({ className, ...props }) {
   return (
-    <div className="relative w-full overflow-auto rounded-md border border-surface-200 bg-white">
+    <div className="relative w-full overflow-auto rounded-lg border border-surface-200 bg-white">
       <table
         className={cn("w-full caption-bottom text-sm", className)}
         {...props}
@@ -44,6 +44,7 @@ export function TableRow({ className, ...props }) {
 export function TableHead({ className, ...props }) {
   return (
     <th
+      scope="col"
       className={cn(
         "h-12 px-4 text-left align-middle font-medium text-surface-500 has-[[role=checkbox]]:pr-0",
         className,

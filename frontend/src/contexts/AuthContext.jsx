@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { authService } from "../services/authService";
 import { AUTH_SESSION_EXPIRED_EVENT, getAccessToken } from "../services/api";
 import { AuthContext } from "./authContext";
+import { useToast } from "./useToast";
 
 export function AuthProvider({ children }) {
+  const { show } = useToast();
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(Boolean(getAccessToken()));
 
@@ -12,6 +14,10 @@ export function AuthProvider({ children }) {
 
     const handleSessionExpired = () => {
       if (isMounted) setUser(null);
+      show({
+        type: "error",
+        message: "Your session expired. Please sign in again.",
+      });
     };
 
     window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpired);
@@ -41,7 +47,7 @@ export function AuthProvider({ children }) {
         handleSessionExpired,
       );
     };
-  }, []);
+  }, [show]);
 
   const value = useMemo(
     () => ({
@@ -56,6 +62,12 @@ export function AuthProvider({ children }) {
       async logout() {
         await authService.logout();
         setUser(null);
+      },
+      async changePassword(payload) {
+        await authService.changePassword(payload);
+        setUser((current) =>
+          current ? { ...current, mustChangePassword: false } : current,
+        );
       },
     }),
     [isLoading, user],

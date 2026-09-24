@@ -5,6 +5,7 @@ export default function ProtectedRoute({
   allowedRoles = [],
   authUser,
   isLoading = false,
+  requirePasswordChange = false,
 }) {
   const location = useLocation();
 
@@ -21,6 +22,12 @@ export default function ProtectedRoute({
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
+  if (requirePasswordChange && authUser.mustChangePassword) {
+    return (
+      <Navigate to="/change-password" replace state={{ from: location }} />
+    );
+  }
+
   // User is authenticated but does not have permission
   // to access this route.
   if (allowedRoles.length > 0 && !allowedRoles.includes(authUser.role)) {
@@ -32,7 +39,7 @@ export default function ProtectedRoute({
       return <Navigate to="/tpo/dashboard" replace />;
     }
 
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/unauthorized" replace />;
   }
 
   return <Outlet />;

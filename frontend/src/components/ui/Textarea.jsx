@@ -7,7 +7,8 @@ export const Textarea = forwardRef(function Textarea(
 ) {
   const generatedId = useId();
   const textareaId = id ?? generatedId;
-  const describedBy = error || helperText ? `${textareaId}-description` : undefined;
+  const describedBy =
+    error || helperText ? `${textareaId}-description` : undefined;
 
   return (
     <div className="w-full">
@@ -26,7 +27,7 @@ export const Textarea = forwardRef(function Textarea(
         aria-invalid={Boolean(error)}
         aria-describedby={describedBy}
         className={cn(
-          "min-h-32 w-full resize-y rounded-xl border bg-white px-3.5 py-3 text-sm text-surface-900 outline-none transition placeholder:text-surface-400",
+          "min-h-32 w-full resize-y rounded-lg border bg-white px-3.5 py-3 text-sm text-surface-900 outline-none transition placeholder:text-surface-400",
           "border-surface-300 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10",
           error && "border-danger focus:border-danger focus:ring-danger/10",
           className,
@@ -37,6 +38,7 @@ export const Textarea = forwardRef(function Textarea(
       {(error || helperText) && (
         <p
           id={describedBy}
+          role={error ? "alert" : undefined}
           className={cn(
             "mt-1.5 text-xs",
             error ? "text-danger" : "text-surface-500",

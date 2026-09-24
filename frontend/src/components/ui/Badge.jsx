@@ -10,7 +10,7 @@ export function Badge({ className, variant = "default", children, ...props }) {
   };
 
   return (
-    <div
+    <span
       className={cn(
         "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2",
         variants[variant],
@@ -19,6 +19,6 @@ export function Badge({ className, variant = "default", children, ...props }) {
       {...props}
     >
       {children}
-    </div>
+    </span>
   );
 }

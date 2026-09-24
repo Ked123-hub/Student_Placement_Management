@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "../../utils";
@@ -20,20 +20,49 @@ export function Modal({
   size = "md",
   closeOnOverlay = true,
 }) {
+  const dialogRef = useRef(null);
+  const previousFocusRef = useRef(null);
+
   useEffect(() => {
     if (!open) return undefined;
 
+    previousFocusRef.current = document.activeElement;
+    const focusableSelector =
+      "button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])";
+
     const handleKeyDown = (event) => {
-      if (event.key == "Escape") onClose?.();
+      if (event.key === "Escape") {
+        onClose?.();
+        return;
+      }
+
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const focusable = [
+        ...dialogRef.current.querySelectorAll(focusableSelector),
+      ];
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     document.addEventListener("keydown", handleKeyDown);
+    window.requestAnimationFrame(() => {
+      dialogRef.current?.querySelector(focusableSelector)?.focus();
+    });
 
     return () => {
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
+      previousFocusRef.current?.focus?.();
     };
   }, [open, onClose]);
 
@@ -56,10 +85,12 @@ export function Modal({
       />
 
       <div
+        ref={dialogRef}
         className={cn(
-          "relative z-10 w-full overflow-hidden rounded-2xl bg-white shadow-2xl",
+          "relative z-10 w-full overflow-hidden rounded-lg bg-white shadow-2xl",
           sizeClasses[size] ?? sizeClasses.md,
         )}
+        tabIndex={-1}
       >
         <div className="flex items-start justify-between gap-4 border-b border-surface-200 px-6 py-4">
           <div>

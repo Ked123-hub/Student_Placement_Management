@@ -37,6 +37,25 @@ function getDemoUserFromToken() {
 }
 
 export const authService = {
+  register(credentials) {
+    if (DEMO_AUTH_ENABLED) {
+      return Promise.resolve({ email: credentials.email, requiresOtp: true });
+    }
+    return api.post("/auth/register", credentials);
+  },
+
+  verifyOtp(payload) {
+    if (DEMO_AUTH_ENABLED) {
+      return Promise.resolve({ verified: payload.otp === "123456" });
+    }
+    return api.post("/auth/verify-otp", payload);
+  },
+
+  changePassword(payload) {
+    if (DEMO_AUTH_ENABLED) return Promise.resolve({ changed: true });
+    return api.post("/auth/change-password", payload);
+  },
+
   async login(credentials) {
     if (DEMO_AUTH_ENABLED) {
       const demoUser = getDemoUser(credentials);

@@ -33,10 +33,7 @@ export function FileUpload({
       return false;
     }
 
-    if (
-      accept === ".pdf" &&
-      selectedFile.type !== "application/pdf"
-    ) {
+    if (accept === ".pdf" && selectedFile.type !== "application/pdf") {
       setLocalError("Only PDF files are allowed.");
       return false;
     }
@@ -54,9 +51,9 @@ export function FileUpload({
 
   return (
     <div className="w-full">
-      <p className="mb-1.5 text-sm font-medium text-surface-700">
-        {label}
-      </p>
+      {label && (
+        <p className="mb-1.5 text-sm font-medium text-surface-700">{label}</p>
+      )}
 
       <button
         type="button"
@@ -76,13 +73,15 @@ export function FileUpload({
           }
         }}
         className={cn(
-          "w-full rounded-2xl border-2 border-dashed p-6 text-center transition focus:outline-none focus:ring-4 focus:ring-primary-500/10",
+          "w-full rounded-lg border-2 border-dashed p-6 text-center transition focus:outline-none focus:ring-4 focus:ring-primary-500/10",
           isDragging
             ? "border-primary-500 bg-primary-50"
             : "border-surface-300 bg-surface-50 hover:border-primary-400 hover:bg-primary-50/50",
           disabled && "cursor-not-allowed opacity-50",
           displayError && "border-danger bg-danger/5",
         )}
+        aria-label={label || "Choose a file"}
+        aria-describedby={displayError ? "file-upload-error" : undefined}
       >
         <UploadCloud
           size={28}
@@ -94,13 +93,9 @@ export function FileUpload({
           Drag and drop your file here
         </p>
 
-        <p className="mt-1 text-xs text-surface-500">
-          or click to browse
-        </p>
+        <p className="mt-1 text-xs text-surface-500">or click to browse</p>
 
-        <p className="mt-2 text-xs text-surface-400">
-          {helperText}
-        </p>
+        <p className="mt-2 text-xs text-surface-400">{helperText}</p>
       </button>
 
       <input
@@ -121,7 +116,7 @@ export function FileUpload({
       />
 
       {file && (
-        <div className="mt-3 flex items-center gap-3 rounded-xl border border-surface-200 bg-white p-3">
+        <div className="mt-3 flex items-center gap-3 rounded-lg border border-surface-200 bg-white p-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-600">
             <FileText size={20} aria-hidden="true" />
           </div>
@@ -148,7 +143,13 @@ export function FileUpload({
       )}
 
       {displayError && (
-        <p className="mt-1.5 text-xs text-danger">{displayError}</p>
+        <p
+          id="file-upload-error"
+          role="alert"
+          className="mt-1.5 text-xs text-danger"
+        >
+          {displayError}
+        </p>
       )}
     </div>
   );
