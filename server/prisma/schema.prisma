@@ -38,6 +38,77 @@ enum EligibilityOperator {
   NOT_IN
 }
 
+enum ApplicationStatus {
+  APPLIED
+  WITHDRAWN
+}
+
+enum ShortlistMethod {
+  CRITERIA
+  COMPANY_LIST
+}
+
+enum ShortlistStatus {
+  DRAFT
+  PUBLISHED
+  REPLACED
+}
+
+enum RoundMode {
+  ONLINE
+  OFFLINE
+}
+
+enum RoundStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+}
+
+enum RoundResultStatus {
+  PASSED
+  FAILED
+  NOT_PROGRESSED
+}
+
+enum PlacementOfferStatus {
+  OFFERED
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum FinalPlacementStatus {
+  ACTIVE
+  CANCELLED
+}
+
+enum NotificationType {
+  DRIVE_OPENED
+  DEADLINE_REMINDER
+  DRIVE_CLOSED
+  DRIVE_CANCELLED
+  APPLICATION_SUBMITTED
+  APPLICATION_WITHDRAWN
+  SHORTLISTED
+  NOT_SHORTLISTED
+  NEXT_ROUND
+  ROUND_UPDATED
+  ROUND_REMINDER
+  RESULT
+  ANNOUNCEMENT
+}
+
+enum AcademicUpdateStatus {
+  OPEN
+  CLOSED
+}
+
 model User {
   id                 String     @id @default(uuid())
   email              String     @unique
@@ -74,6 +145,13 @@ model Student {
   user               User               @relation(fields: [userId], references: [id])
   driveEligibilities DriveEligibility[]
   resumes            Resume[]
+  applications       Application[]
+  shortlistEntries   ShortlistStudent[]
+  attendances        Attendance[]
+  roundResults       RoundResult[]
+  placementOffers    PlacementOffer[]
+  finalPlacement     FinalPlacement?
+  notifications      Notification[]
 }
 
 model Resume {
@@ -84,7 +162,106 @@ model Resume {
   storageKey String
   uploadedAt DateTime @default(now())
 
-  student Student @relation(fields: [studentId], references: [id])
+  student      Student       @relation(fields: [studentId], references: [id])
+  applications Application[]
+}
+
+model Application {
+  id        String @id @default(uuid())
+  studentId String
+  driveId   String
+  resumeId  String
+
+  status      ApplicationStatus @default(APPLIED)
+  appliedAt   DateTime          @default(now())
+  withdrawnAt DateTime?
+
+  cgpaAtApplication Decimal @db.Decimal(4, 2)
+
+  student Student        @relation(fields: [studentId], references: [id])
+  drive   PlacementDrive @relation(fields: [driveId], references: [id])
+  resume  Resume         @relation(fields: [resumeId], references: [id])
+
+  @@unique([studentId, driveId])
+}
+
+model Shortlist {
+  id      String          @id @default(uuid())
+  driveId String
+  method  ShortlistMethod
+  status  ShortlistStatus @default(DRAFT)
+
+  createdBy   String
+  createdAt   DateTime  @default(now())
+  publishedAt DateTime?
+
+  drive    PlacementDrive     @relation(fields: [driveId], references: [id])
+  students ShortlistStudent[]
+}
+
+model ShortlistStudent {
+  id          String   @id @default(uuid())
+  shortlistId String
+  studentId   String
+  createdAt   DateTime @default(now())
+
+  shortlist Shortlist @relation(fields: [shortlistId], references: [id])
+  student   Student   @relation(fields: [studentId], references: [id])
+
+  @@unique([shortlistId, studentId])
+}
+
+model RecruitmentRound {
+  id      String @id @default(uuid())
+  driveId String
+
+  roundNumber Int
+  name        String
+  startAt     DateTime
+  endAt       DateTime
+  mode        RoundMode
+  location    String?
+  description String?
+  status      RoundStatus @default(SCHEDULED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  drive      PlacementDrive @relation(fields: [driveId], references: [id])
+  attendance Attendance[]
+  results    RoundResult[]
+}
+
+model Attendance {
+  id        String @id @default(uuid())
+  roundId   String
+  studentId String
+
+  status   AttendanceStatus
+  markedAt DateTime         @default(now())
+  markedBy String
+
+  round   RecruitmentRound @relation(fields: [roundId], references: [id])
+  student Student          @relation(fields: [studentId], references: [id])
+
+  @@unique([roundId, studentId])
+}
+
+model RoundResult {
+  id        String @id @default(uuid())
+  roundId   String
+  studentId String
+
+  result     RoundResultStatus
+  score      Decimal?          @db.Decimal(6, 2)
+  remarks    String?
+  recordedAt DateTime          @default(now())
+  recordedBy String
+
+  round   RecruitmentRound @relation(fields: [roundId], references: [id])
+  student Student          @relation(fields: [studentId], references: [id])
+
+  @@unique([roundId, studentId])
 }
 
 model Company {
@@ -121,6 +298,28 @@ model PlacementDrive {
   company             Company               @relation(fields: [companyId], references: [id])
   eligibilityCriteria EligibilityCriteria[]
   driveEligibilities  DriveEligibility[]
+  applications        Application[]
+  shortlists          Shortlist[]
+  rounds              RecruitmentRound[]
+  placementOffers     PlacementOffer[]
+}
+
+model PlacementOffer {
+  id        String @id @default(uuid())
+  studentId String
+  driveId   String
+
+  role          String
+  package       Decimal?             @db.Decimal(10, 2)
+  selectionDate DateTime
+  status        PlacementOfferStatus @default(OFFERED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student        Student         @relation(fields: [studentId], references: [id])
+  drive          PlacementDrive  @relation(fields: [driveId], references: [id])
+  finalPlacement FinalPlacement?
 }
 
 model EligibilityCriteria {
@@ -137,6 +336,21 @@ model EligibilityCriteria {
   drive PlacementDrive @relation(fields: [driveId], references: [id])
 }
 
+model FinalPlacement {
+  id        String @id @default(uuid())
+  studentId String @unique
+  offerId   String @unique
+
+  placementDate DateTime
+  status        FinalPlacementStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student Student        @relation(fields: [studentId], references: [id])
+  offer   PlacementOffer @relation(fields: [offerId], references: [id])
+}
+
 model DriveEligibility {
   id        String @id @default(uuid())
   driveId   String
@@ -150,4 +364,25 @@ model DriveEligibility {
   student Student        @relation(fields: [studentId], references: [id])
 
   @@unique([driveId, studentId])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  studentId String
+  title     String
+  message   String
+  type      NotificationType
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  student Student @relation(fields: [studentId], references: [id])
+}
+
+model AcademicUpdatePeriod {
+  id        String               @id @default(uuid())
+  startAt   DateTime
+  endAt     DateTime
+  status    AcademicUpdateStatus @default(OPEN)
+  createdBy String
+  createdAt DateTime             @default(now())
 }
