@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  TPO
+}
+
+enum UserStatus {
+  ACTIVE
+  LOCKED
+  DISABLED
+}
+
+enum EligibilityField {
+  CGPA
+  TENTH_PERCENT
+  TWELFTH_PERCENT
+  DIPLOMA_PERCENT
+  BACKLOGS
+  BRANCH
+  YEAR
+}
+
+enum EligibilityOperator {
+  GTE
+  LTE
+  GT
+  LT
+  EQ
+  IN
+  NOT_IN
+}
+
+model User {
+  id                 String     @id @default(uuid())
+  email              String     @unique
+  passwordHash       String
+  role               Role
+  status             UserStatus @default(ACTIVE)
+  mustChangePassword Boolean    @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student Student?
+}
+
+model Student {
+  id     String @id @default(uuid())
+  userId String @unique
+
+  prn            String   @unique
+  rollNumber     String
+  name           String
+  phone          String?
+  branch         String
+  year           Int
+  cgpa           Decimal  @db.Decimal(4, 2)
+  tenthPercent   Decimal  @db.Decimal(5, 2)
+  twelfthPercent Decimal  @db.Decimal(5, 2)
+  diplomaPercent Decimal? @db.Decimal(5, 2)
+  backlogs       Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user               User               @relation(fields: [userId], references: [id])
+  driveEligibilities DriveEligibility[]
+  resumes            Resume[]
+}
+
+model Resume {
+  id        String @id @default(uuid())
+  studentId String
+
+  fileName   String
+  storageKey String
+  uploadedAt DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id])
+}
+
+model Company {
+  id     String @id @default(uuid())
+  name   String
+  status String @default("ACTIVE")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  drives PlacementDrive[]
+}
+
+model PlacementDrive {
+  id        String @id @default(uuid())
+  companyId String
+
+  jobRole           String
+  package           Decimal?  @db.Decimal(10, 2)
+  internshipStipend Decimal?  @db.Decimal(10, 2)
+  location          String
+  jobDescription    String
+  joiningDate       DateTime?
+  openings          Int
+  selectionProcess  String
+  requiredSkills    String?
+
+  applicationDeadline DateTime
+  status              String   @default("DRAFT")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company             Company               @relation(fields: [companyId], references: [id])
+  eligibilityCriteria EligibilityCriteria[]
+  driveEligibilities  DriveEligibility[]
+}
+
+model EligibilityCriteria {
+  id      String @id @default(uuid())
+  driveId String
+
+  field    EligibilityField
+  operator EligibilityOperator
+  value    Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  drive PlacementDrive @relation(fields: [driveId], references: [id])
+}
+
+model DriveEligibility {
+  id        String @id @default(uuid())
+  driveId   String
+  studentId String
+
+  eligible    Boolean
+  reason      String?
+  evaluatedAt DateTime @default(now())
+
+  drive   PlacementDrive @relation(fields: [driveId], references: [id])
+  student Student        @relation(fields: [studentId], references: [id])
+
+  @@unique([driveId, studentId])
+}
