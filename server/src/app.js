@@ -1,4 +1,7 @@
+require("dotenv").config();
+
 const express = require("express");
+const authRoutes = require("./routes/auth.routes");
 
 const app = express();
 
@@ -10,6 +13,8 @@ app.get("/", (req, res) => {
         message: "Placement Management API is running"
     });
 });
+
+app.use("/api/auth", authRoutes);
 
 const PORT = 5000;
 
