@@ -129,6 +129,7 @@ model Student {
   prn            String   @unique
   rollNumber     String
   name           String
+  email          String   @unique
   phone          String?
   branch         String
   year           Int

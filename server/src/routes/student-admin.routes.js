@@ -16,4 +16,12 @@ router.post(
     studentImportController.preview
 );
 
+router.post(
+    "/students/import/confirm",
+    authenticate,
+    allowRoles("TPO"),
+    upload.single("file"),
+    studentImportController.confirm
+);
+
 module.exports = router;
