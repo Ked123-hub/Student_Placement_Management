@@ -50,14 +50,6 @@ async function me(req, res) {
     }
 }
 
-// async function tpoTest(req, res) {
-//     return res.status(200).json({
-//         success: true,
-//         message: "TPO access granted",
-//         userId: req.user.userId,
-//         role: req.user.role
-//     });
-// }
 
 module.exports = {
     login,
