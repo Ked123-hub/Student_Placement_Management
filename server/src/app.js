@@ -13,6 +13,9 @@ const studentDriveRoutes = require("./routes/student-drive.routes");
 const applicationAdminRoutes = require("./routes/application-admin.routes");
 const shortlistAdminRoutes = require("./routes/shortlist-admin.routes");
 const roundRoutes = require("./routes/round.routes");
+const attendanceRoutes = require("./routes/attendance.routes");
+const roundResultRoutes = require("./routes/round-result.routes");
+const offerRoutes = require("./routes/offer.routes");
 
 const app = express();
 
@@ -37,6 +40,9 @@ app.use("/api/admin/eligibility", eligibilityRoutes);
 app.use("/api/admin/applications", applicationAdminRoutes);
 app.use("/api/admin/shortlists", shortlistAdminRoutes);
 app.use("/api/admin", roundRoutes);
+app.use("/api", attendanceRoutes);
+app.use("/api", roundResultRoutes);
+app.use("/api", offerRoutes);
 
 const PORT = 5000;
 
