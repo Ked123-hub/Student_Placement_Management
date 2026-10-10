@@ -1,4 +1,5 @@
 const prisma = require("../config/db");
+const notificationService = require("./notification.service");
 
 function createAppError(code, message, statusCode = 400) {
   const error = new Error(message);
@@ -198,9 +199,16 @@ async function recordResult(roundId, data = {}, userId) {
       }
     });
 
+    await notificationService.safeCreateNotification({
+      studentId: trimmedStudentId,
+      title: `Round Result: ${round.name}`,
+      message: `Your result for Round ${round.roundNumber} (${round.name}) is ${result}.`,
+      type: "RESULT"
+    });
+
     return {
-      result: updated,
-      isUpdated: true
+      result: finalResult,
+      isUpdated: Boolean(existing)
     };
   }
 
@@ -214,6 +222,13 @@ async function recordResult(roundId, data = {}, userId) {
       recordedAt: now,
       recordedBy: userId
     }
+  });
+
+  await notificationService.safeCreateNotification({
+    studentId: trimmedStudentId,
+    title: `Round Result: ${round.name}`,
+    message: `Your result for Round ${round.roundNumber} (${round.name}) is ${result}.`,
+    type: "RESULT"
   });
 
   return {
@@ -432,7 +447,7 @@ async function recordResultsBulk(roundId, resultsArray, userId) {
 
   const now = new Date();
 
-  return prisma.$transaction(async (tx) => {
+  const outcome = await prisma.$transaction(async (tx) => {
     let createdCount = 0;
     let updatedCount = 0;
     const processedResults = [];
@@ -485,6 +500,17 @@ async function recordResultsBulk(roundId, resultsArray, userId) {
       updated: updatedCount
     };
   });
+
+  for (const item of sanitizedList) {
+    await notificationService.safeCreateNotification({
+      studentId: item.studentId,
+      title: `Round Result: ${round.name}`,
+      message: `Your result for Round ${round.roundNumber} (${round.name}) is ${item.result}.`,
+      type: "RESULT"
+    });
+  }
+
+  return outcome;
 }
 
 async function getRoundResults(roundId, query = {}) {

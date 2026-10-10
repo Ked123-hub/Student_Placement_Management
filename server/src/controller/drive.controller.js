@@ -1,4 +1,5 @@
 const prisma = require("../config/db");
+const notificationService = require("../services/notification.service");
 
 async function createDrive(req, res) {
   try {
@@ -165,6 +166,25 @@ async function publishDrive(req, res) {
           status: "PUBLISHED"
         }
       });
+
+    const eligibilities = await prisma.driveEligibility.findMany({
+      where: {
+        driveId: id,
+        eligible: true
+      },
+      select: {
+        studentId: true
+      }
+    });
+
+    if (eligibilities.length > 0) {
+      await notificationService.safeCreateNotificationsBulk({
+        studentIds: eligibilities.map((e) => e.studentId),
+        title: "New Placement Drive Opened",
+        message: `A new placement drive for ${updatedDrive.jobRole} has been published. Apply before the deadline!`,
+        type: "DRIVE_OPENED"
+      });
+    }
 
     return res.status(200).json({
       success: true,

@@ -1,4 +1,5 @@
 const prisma = require("../config/db");
+const notificationService = require("./notification.service");
 
 function createAppError(code, message, statusCode = 400) {
   const error = new Error(message);
@@ -228,6 +229,13 @@ async function createOffer(driveId, data = {}) {
     }
   });
 
+  await notificationService.safeCreateNotification({
+    studentId: trimmedStudentId,
+    title: "Placement Offer Received",
+    message: `Congratulations! You have received a placement offer for the role of ${resolvedRole} from ${drive.company.name}.`,
+    type: "ANNOUNCEMENT"
+  });
+
   return offer;
 }
 
@@ -441,6 +449,15 @@ async function updateOffer(offerId, data = {}) {
       }
     }
   });
+
+  if (updateData.status) {
+    await notificationService.safeCreateNotification({
+      studentId: offer.studentId,
+      title: "Placement Offer Status Updated",
+      message: `Your placement offer for ${updatedOffer.role} has been updated to ${updateData.status}.`,
+      type: "ANNOUNCEMENT"
+    });
+  }
 
   return updatedOffer;
 }

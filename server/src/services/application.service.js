@@ -1,4 +1,5 @@
 const prisma = require("../config/db");
+const notificationService = require("./notification.service");
 
 function createAppError(code, message, statusCode = 400) {
   const error = new Error(message);
@@ -158,6 +159,13 @@ async function applyToDrive(userId, driveId) {
           }
         }
       }
+    });
+
+    await notificationService.safeCreateNotification({
+      studentId: student.id,
+      title: "Application Submitted",
+      message: `Your application for ${drive.jobRole} at ${drive.company.name} has been submitted successfully.`,
+      type: "APPLICATION_SUBMITTED"
     });
 
     return application;

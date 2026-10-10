@@ -1,4 +1,5 @@
 const prisma = require("../config/db");
+const notificationService = require("./notification.service");
 
 function createAppError(code, message, statusCode = 400) {
   const error = new Error(message);
@@ -439,7 +440,7 @@ async function removeStudentFromShortlist(shortlistId, studentId) {
 }
 
 async function publishShortlist(shortlistId) {
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const shortlist = await assertDraftShortlist(shortlistId, tx);
 
     const studentCount = await tx.shortlistStudent.count({
@@ -478,6 +479,20 @@ async function publishShortlist(shortlistId) {
     const updated = await loadShortlist(shortlistId, tx);
     return formatShortlist(updated);
   });
+
+  if (result && Array.isArray(result.students) && result.students.length > 0) {
+    const studentIds = result.students.map((s) => s.student?.id || s.studentId).filter(Boolean);
+    const driveRole = result.drive?.jobRole || "Placement Drive";
+    const companyName = result.drive?.company?.name || "";
+    await notificationService.safeCreateNotificationsBulk({
+      studentIds,
+      title: "Shortlisted for Drive",
+      message: `Congratulations! You have been shortlisted for ${driveRole}${companyName ? ` at ${companyName}` : ""}.`,
+      type: "SHORTLISTED"
+    });
+  }
+
+  return result;
 }
 
 async function getStudentShortlistStatus(userId, driveId) {

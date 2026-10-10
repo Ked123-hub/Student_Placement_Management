@@ -1,4 +1,5 @@
 const prisma = require("../config/db");
+const notificationService = require("./notification.service");
 
 function createAppError(code, message, statusCode = 400) {
   const error = new Error(message);
@@ -198,6 +199,13 @@ async function createFinalPlacement(data = {}) {
     });
   });
 
+  await notificationService.safeCreateNotification({
+    studentId: targetStudentId,
+    title: "Final Placement Confirmed",
+    message: `Your final placement for ${offer.role} is confirmed!`,
+    type: "ANNOUNCEMENT"
+  });
+
   return finalPlacement;
 }
 
@@ -360,6 +368,15 @@ async function updateFinalPlacement(placementId, data = {}) {
       include: placementInclude
     });
   });
+
+  if (updateData.status) {
+    await notificationService.safeCreateNotification({
+      studentId: existingPlacement.studentId,
+      title: "Placement Status Updated",
+      message: `Your final placement status has been updated to ${updateData.status}.`,
+      type: "ANNOUNCEMENT"
+    });
+  }
 
   return updatedPlacement;
 }

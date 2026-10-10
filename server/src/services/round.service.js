@@ -1,4 +1,5 @@
 const prisma = require("../config/db");
+const notificationService = require("./notification.service");
 
 function createAppError(code, message, statusCode = 400) {
   const error = new Error(message);
@@ -121,6 +122,45 @@ async function createRound(driveId, data = {}) {
       status: status || "SCHEDULED"
     }
   });
+
+  if (round.status === "SCHEDULED") {
+    let candidateIds = [];
+    if (round.roundNumber === 1) {
+      const publishedShortlist = await prisma.shortlist.findFirst({
+        where: { driveId, status: "PUBLISHED" },
+        include: { students: { select: { studentId: true } } }
+      });
+      if (publishedShortlist && publishedShortlist.students.length > 0) {
+        candidateIds = publishedShortlist.students.map((s) => s.studentId);
+      } else {
+        const apps = await prisma.application.findMany({
+          where: { driveId, status: "APPLIED" },
+          select: { studentId: true }
+        });
+        candidateIds = apps.map((a) => a.studentId);
+      }
+    } else {
+      const prevRound = await prisma.recruitmentRound.findFirst({
+        where: { driveId, roundNumber: round.roundNumber - 1 }
+      });
+      if (prevRound) {
+        const passedResults = await prisma.roundResult.findMany({
+          where: { roundId: prevRound.id, result: "PASSED" },
+          select: { studentId: true }
+        });
+        candidateIds = passedResults.map((r) => r.studentId);
+      }
+    }
+
+    if (candidateIds.length > 0) {
+      await notificationService.safeCreateNotificationsBulk({
+        studentIds: candidateIds,
+        title: `Round Scheduled: ${round.name}`,
+        message: `Round ${round.roundNumber} (${round.name}) has been scheduled.`,
+        type: "NEXT_ROUND"
+      });
+    }
+  }
 
   return round;
 }
@@ -274,6 +314,20 @@ async function updateRound(roundId, data = {}) {
     },
     data: updateData
   });
+
+  const apps = await prisma.application.findMany({
+    where: { driveId: existing.driveId, status: "APPLIED" },
+    select: { studentId: true }
+  });
+
+  if (apps.length > 0) {
+    await notificationService.safeCreateNotificationsBulk({
+      studentIds: apps.map((a) => a.studentId),
+      title: `Round Updated: ${updatedRound.name}`,
+      message: `Round ${updatedRound.roundNumber} (${updatedRound.name}) details have been updated.`,
+      type: "ROUND_UPDATED"
+    });
+  }
 
   return updatedRound;
 }
