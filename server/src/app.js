@@ -18,6 +18,7 @@ const roundResultRoutes = require("./routes/round-result.routes");
 const offerRoutes = require("./routes/offer.routes");
 const placementRoutes = require("./routes/placement.routes");
 const notificationRoutes = require("./routes/notification.routes");
+const analyticsRoutes = require("./routes/analytics.routes");
 
 const app = express();
 
@@ -47,6 +48,7 @@ app.use("/api", roundResultRoutes);
 app.use("/api", offerRoutes);
 app.use("/api", placementRoutes);
 app.use("/api", notificationRoutes);
+app.use("/api/admin/analytics", analyticsRoutes);
 
 const PORT = 5000;
 
